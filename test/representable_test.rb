@@ -490,6 +490,38 @@ class RepresentableTest < MiniTest::Spec
           album.songs.must_equal ["still failing?", "CHARLIE STILL SMIRKS"]
         end
       end
+
+      describe "with :include values" do
+        module RatingRepresenter
+          include Representable
+          property :name
+          property :rating
+        end
+        representer! do
+          collection :ratings, :extend => RatingRepresenter, :class => String, :include => [:name]
+        end
+
+        it "should only include the rating attribute" do
+          values = OpenStruct.new(:title => "Affliction", :ratings => [{name: "Jeff", rating: 5}, {name: "Tom", rating: 4}]).extend(representer)
+          values[:ratings].collect{ |r| r[:rating] }.must_equal []
+        end
+      end
+
+      describe "with :exclude values" do
+        module RatingRepresenter
+          include Representable
+          property :name
+          property :rating
+        end
+        representer! do
+          collection :ratings, :extend => RatingRepresenter, :class => String, :exclude => [:name]
+        end
+
+        it "should exclude the rating attribute" do
+          values = OpenStruct.new(:title => "Affliction", :ratings => [{name: "Jeff", rating: 5}, {name: "Tom", rating: 4}]).extend(representer)
+          values[:ratings].collect{ |r| r[:name] }.must_equal []
+        end
+      end
     end
 
     describe ":decorator" do
